@@ -32,7 +32,7 @@ public class MainViewModel extends AndroidViewModel {
             .subscribe(
                 this.game::postValue,
                 this::postThrowable
-            ) //consumer of a gema, consumer of a throwable; receive a throwable object and then do postThrowable object.
+            ) //consumer of a game, consumer of a throwable; receive a throwable object and then do postThrowable object.
     );
   }
 
