@@ -24,7 +24,7 @@ public class MainViewModel extends AndroidViewModel {
     game = new MutableLiveData<>();
     throwable = new MutableLiveData<>();
     pending = new CompositeDisposable();
-    startGame("ABCDEF",3);
+    startGame();
   }
 
   public LiveData<Game> getGame() {
@@ -35,11 +35,11 @@ public class MainViewModel extends AndroidViewModel {
     return throwable;
   }
 
-  public void startGame(String pool, int length) {
+  public void startGame() {
     throwable.postValue(null);
     pending.add(
         repository
-            .startGame(pool, length)
+            .startGame("ABCDEF", 3)
             .subscribe(
                 this.game::postValue,
                 this::postThrowable
