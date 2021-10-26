@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider;
 import edu.cnm.deepdive.codebreaker.R;
 import edu.cnm.deepdive.codebreaker.adapter.GuessItemAdapter;
 import edu.cnm.deepdive.codebreaker.databinding.FragmentPlayBinding;
+import edu.cnm.deepdive.codebreaker.model.Game;
 import edu.cnm.deepdive.codebreaker.viewmodel.MainViewModel;
 
 public class PlayFragment extends Fragment implements InputFilter {
@@ -40,8 +41,9 @@ public class PlayFragment extends Fragment implements InputFilter {
       ViewGroup container, Bundle savedInstanceState) {
     binding = FragmentPlayBinding.inflate(inflater, container, false);
     binding.submit.setOnClickListener((v) ->
-        viewModel.submitGuess(binding.guess.getText().toString().trim())
-    ); //compiler infers that v is a view : (View v)
+        viewModel.submitGuess(binding.guess.getText().toString().trim()));
+    binding.guess.setFilters(new InputFilter[]{this});
+    //compiler infers that v is a view : (View v)
     return binding.getRoot();
   }
 
@@ -55,15 +57,7 @@ public class PlayFragment extends Fragment implements InputFilter {
           }
         }
     );//gets access to livedata from viewmodel - just observing, run contents of bucket once this object changes.
-    viewModel.getGame().observe(getViewLifecycleOwner(), (game) -> {
-      GuessItemAdapter adapter = new GuessItemAdapter(getContext(), game.getGuesses());// how we get a context in a fragment
-      binding.guesses.setAdapter(adapter);//this adapter can tell us our guesses
-      binding.guessContainer.setVisibility(game.isSolved() ? View.GONE : View.VISIBLE);
-      codeLength = game.getLength();
-      pool = game.getPool();
-      illegalCharacters = String.format(ILLEGAL_CHARACTERS_FORMAT,pool);
-      // TODO Enforce submit conditions.
-    }); //observes a game
+    viewModel.getGame().observe(getViewLifecycleOwner(), this::update); //observes a game
   } //when fragment dies, then cleans up
 
   @Override
@@ -78,6 +72,7 @@ public class PlayFragment extends Fragment implements InputFilter {
     boolean handled;
     if (item.getItemId() == R.id.new_game) {
       handled = true;
+      binding.guess.getText().clear();
       viewModel.startGame();
     } else {
       handled = super.onOptionsItemSelected(item);
@@ -99,14 +94,30 @@ public class PlayFragment extends Fragment implements InputFilter {
         .subSequence(start, end)
         .toString()
         .toUpperCase()
-        .replaceAll(illegalCharacters,"");
+        .replaceAll(illegalCharacters, "");
     StringBuilder builder = new StringBuilder(dest);
     builder.replace(dstart, dend, modifiedSource);
     if (builder.length() > codeLength) {
-      modifiedSource = modifiedSource.substring(0,modifiedSource.length() - (builder.length() - codeLength));
+      modifiedSource = modifiedSource.substring(0,
+          modifiedSource.length() - (builder.length() - codeLength));
     }
     int newLength = dest.length() - (dend - dstart) + modifiedSource.length();
-    binding.submit.setEnabled(newLength == codeLength);
-    return modifiedSource;
+    checkSubmitConditions(newLength);
+    return modifiedSource; //the part that is valid to paste.
+  }
+
+  private void update(Game game) { //updates the display model
+    GuessItemAdapter adapter = new GuessItemAdapter(getContext(),
+        game.getGuesses());// how we get a context in a fragment
+    binding.guesses.setAdapter(adapter);//this adapter can tell us our guesses
+    binding.guessContainer.setVisibility(game.isSolved() ? View.GONE : View.VISIBLE);
+    codeLength = game.getLength();
+    pool = game.getPool();
+    illegalCharacters = String.format(ILLEGAL_CHARACTERS_FORMAT, pool);
+    checkSubmitConditions(binding.guess.getText().toString().trim().length());
+  }
+
+  private void checkSubmitConditions(int length) {
+    binding.submit.setEnabled(length == codeLength);
   }
 }
