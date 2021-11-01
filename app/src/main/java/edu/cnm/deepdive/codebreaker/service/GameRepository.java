@@ -32,7 +32,7 @@ public class GameRepository {
           guess.setText(text);
           return guess;
         })
-        .flatMap((guess) -> proxy.submitGuess(guess, game.getId()))
+        .flatMap((guess) -> proxy.submitGuess(guess, game.getServiceKey()))
         .map((guess) -> {
           game.getGuesses().add(guess);
           game.setSolved(guess.isSolution());
