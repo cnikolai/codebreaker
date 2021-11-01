@@ -45,5 +45,5 @@ public interface GuessDao {
   LiveData<List<Guess>> selectAll();
 
   @Query("SELECT * FROM guess WHERE guess_id = :guessId")
-  LiveData<Guess> select(long guessId );
+  LiveData<Guess> select(long guessId);
 }
