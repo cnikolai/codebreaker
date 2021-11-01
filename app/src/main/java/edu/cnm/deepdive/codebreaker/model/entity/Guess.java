@@ -26,7 +26,7 @@ import java.util.Date;
 )
 public class Guess {
 
-  @PrimaryKey
+  @PrimaryKey(autoGenerate = true)
   @ColumnInfo(name = "guess_id")
   private long id;
 
