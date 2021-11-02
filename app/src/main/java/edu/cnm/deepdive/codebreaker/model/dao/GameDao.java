@@ -7,6 +7,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 import edu.cnm.deepdive.codebreaker.model.entity.Game;
+import edu.cnm.deepdive.codebreaker.model.view.GameSummary;
 import io.reactivex.Single;
 import java.util.Collection;
 import java.util.List;
@@ -45,5 +46,11 @@ public interface GameDao {
   LiveData<List<Game>> selectAll();
 
   @Query("SELECT * FROM game WHERE game_id = :gameId")
-  LiveData<Game> select(long gameId );
+  LiveData<Game> select(long gameId);
+
+  @Query("SELECT * FROM game_summary WHERE pool_size = :poolSize AND length = :length ORDER BY guess_count ASC")
+  LiveData<List<GameSummary>> selectSummariesByGuessCount(int poolSize, int length);
+
+  @Query("SELECT * FROM game_summary WHERE pool_size = :poolSize AND length = :length ORDER BY total_time ASC")
+  LiveData<List<GameSummary>> selectSummariesByTotalTime(int poolSize, int length);
 }
