@@ -16,7 +16,7 @@ public class GameSummary extends Game {
       + "  INNER JOIN (SELECT game_id, COUNT(*) as guess_count, MIN(created) as first_guess, MAX(created) as last_guess\n"
       + "  FROM guess\n"
       + "    GROUP BY game_id) AS s\n"
-      + "      on g.game_id = s.game_id";
+      + "      ON g.game_id = s.game_id";
 
   @ColumnInfo(name = "guess_count")
   private int guessCount;
