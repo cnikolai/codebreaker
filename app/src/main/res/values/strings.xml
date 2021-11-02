@@ -14,4 +14,7 @@
   <string name="submit">Submit</string>
   <string name="guess_hint">Text of guess</string>
   <string name="new_game">New Game</string>
+
+  <string name="play_error_message">Unable to process request. (%s)</string>
+  <string name="error_dismiss">Dismiss</string>
 </resources>
