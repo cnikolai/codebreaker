@@ -6,6 +6,7 @@ import edu.cnm.deepdive.codebreaker.model.dao.GameDao;
 import edu.cnm.deepdive.codebreaker.model.dao.GuessDao;
 import edu.cnm.deepdive.codebreaker.model.entity.Game;
 import edu.cnm.deepdive.codebreaker.model.entity.Guess;
+import edu.cnm.deepdive.codebreaker.model.pojo.GameWithGuesses;
 import edu.cnm.deepdive.codebreaker.model.view.GameSummary;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -24,49 +25,40 @@ public class GameRepository {
     guessDao = database.getGuessDao();
   }
 
-
-  public Single<Game> startGame(String pool, int length) {
-    return Single
-        .fromCallable(() -> {
-          Game game = new Game();
-          game.setPool(pool);
-          game.setLength(length);
-          return game;
-        }) //asynchronous call
-        .flatMap(proxy::startGame)
-        .map((game) -> {
-          int poolSize = (int) game
+  public Single<Game> save(Game game) {
+    return proxy
+        .startGame(game)
+        .map((startedGame) -> {
+          int poolSize = (int) startedGame
               .getPool()
               .codePoints() //int stream of codepoints ints; streams can be as long as a long
               .count();
-          game.setPoolSize(poolSize);
-          return game;
+          startedGame.setPoolSize(poolSize);
+          return startedGame;
         })
         .subscribeOn(Schedulers.io());
   }
 
-  public Single<Game> submitGuess(Game game, String text) {
-    return Single
-        .fromCallable(() -> {
-          Guess guess = new Guess();
-          guess.setText(text);
-          return guess;
-        })
-        .flatMap((guess) -> proxy.submitGuess(guess, game.getServiceKey()))
-        .map((guess) -> {
-          game.getGuesses().add(guess);
-          game.setSolved(guess.isSolution());
+  public Single<Game> save(Game game, Guess guess) {
+    return proxy.submitGuess(guess, game.getServiceKey())
+        .map((processedGuess) -> {
+          game.getGuesses().add(processedGuess);
+          game.setSolved(processedGuess.isSolution());
           return game;
         })
         .flatMap(this::insertGameWithGuesses)
         .subscribeOn(Schedulers.io());
   }
 
-  public LiveData<List<GameSummary>> selectSummariesByGuessCount(int poolSize, int length) {
+  public LiveData<GameWithGuesses> get(long gameId) {
+    return gameDao.select(gameId);
+  }
+
+  public LiveData<List<GameSummary>> getOrderedByGuessCount(int poolSize, int length) {
     return gameDao.selectSummariesByGuessCount(poolSize, length);
   }
 
-  public LiveData<List<GameSummary>> selectSummariesByTotalTime(int poolSize, int length) {
+  public LiveData<List<GameSummary>> getOrderedByTotalTime(int poolSize, int length) {
     return gameDao.selectSummariesByTotalTime(poolSize, length);
   }
 

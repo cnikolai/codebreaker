@@ -10,10 +10,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.OnLifecycleEvent;
 import edu.cnm.deepdive.codebreaker.model.entity.Game;
-import edu.cnm.deepdive.codebreaker.model.view.GameSummary;
+import edu.cnm.deepdive.codebreaker.model.entity.Guess;
 import edu.cnm.deepdive.codebreaker.service.GameRepository;
 import io.reactivex.disposables.CompositeDisposable;
-import java.util.List;
 
 public class PlayViewModel extends AndroidViewModel implements LifecycleObserver {
 
@@ -41,9 +40,12 @@ public class PlayViewModel extends AndroidViewModel implements LifecycleObserver
 
   public void startGame() {
     throwable.postValue(null);
+    Game game = new Game();
+    game.setPool("ABCDEF"); //TODO: read value from shared preferences
+    game.setLength(3); //TODO: read value from shared preferences
     pending.add(
         repository
-            .startGame("ABCDEF", 3)
+            .save(game)
             .subscribe(
                 this.game::postValue,
                 this::postThrowable
@@ -53,8 +55,11 @@ public class PlayViewModel extends AndroidViewModel implements LifecycleObserver
 
   public void submitGuess(String text) {
     throwable.postValue(null); //clears the exceptions.
+    Guess guess = new Guess();
+    guess.setText(text);
+    //noinspection ConstantConditions
     pending.add(
-        repository.submitGuess(game.getValue(),text)
+        repository.save(game.getValue(),guess)
             .subscribe(
                 game::postValue,
                 this::postThrowable //if we didn't get a POST? postValue, then get a throwable
