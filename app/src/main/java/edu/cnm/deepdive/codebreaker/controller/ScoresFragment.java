@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import edu.cnm.deepdive.codebreaker.adapter.GameSummaryAdapter;
 import edu.cnm.deepdive.codebreaker.databinding.FragmentScoresBinding;
 import edu.cnm.deepdive.codebreaker.viewmodel.ScoresViewModel;
 
@@ -28,8 +29,10 @@ public class ScoresFragment extends Fragment {
     viewModel = new ViewModelProvider(this).get(ScoresViewModel.class);
     viewModel
         .getGames()
-        .observe(getViewLifecycleOwner(),(games) -> {
-          //TODO: Create adapter with games, and attach adapter to RecyclerView
+        .observe(getViewLifecycleOwner(), (games) -> {
+          GameSummaryAdapter adapter = new GameSummaryAdapter(getContext(),
+              games); //Create adapter with games, and attach adapter to RecyclerView
+          binding.games.setAdapter(adapter);
         });
   }
 
