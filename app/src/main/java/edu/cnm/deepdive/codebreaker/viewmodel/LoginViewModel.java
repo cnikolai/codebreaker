@@ -66,7 +66,7 @@ public class LoginViewModel extends AndroidViewModel implements DefaultLifecycle
     pending.add(disposable);
   }
 
-  public void SignOut() {
+  public void signOut() {
     Disposable disposable = repository
         .signOut()
         .doFinally(() -> account.postValue(null))
