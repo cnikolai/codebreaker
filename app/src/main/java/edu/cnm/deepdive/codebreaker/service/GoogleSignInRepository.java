@@ -20,7 +20,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class GoogleSignInRepository {
 
-  private static final String BEARER_TOKEN_FORMAT = "Bearer %s";
+  private static final String BEARER_TOKEN_FORMAT = "Bearer %s"; //send this as a header; pass bearer token to our service for authentication.
 
   private static Application context;
 
@@ -33,7 +33,7 @@ public class GoogleSignInRepository {
         .requestEmail()
         .requestId() //oauth key from google
         .requestProfile()
-        .requestIdToken(BuildConfig.CLIENT_ID)//bearer token that we need
+        .requestIdToken(BuildConfig.CLIENT_ID)//bearer token that we need for this client id.
         .build();
     client = GoogleSignIn.getClient(context, options);
   }
