@@ -29,9 +29,7 @@ public class PlayFragment extends Fragment {
   private PlayViewModel viewModel;
   private FragmentPlayBinding binding;
   private int codeLength;
-  private String pool;
   private Spinner[] spinners;
-  private Game game;
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,15 +40,7 @@ public class PlayFragment extends Fragment {
   public View onCreateView(@NonNull LayoutInflater inflater,
       ViewGroup container, Bundle savedInstanceState) {
     binding = FragmentPlayBinding.inflate(inflater, container, false);
-    binding.submit.setOnClickListener((v) -> {
-      // Concatenate spinner selections & submit
-      StringBuilder builder = new StringBuilder();
-      for (int i = 0; i < codeLength; i++) {
-        String emoji = (String) spinners[i].getSelectedItem();
-        builder.append(emoji);
-      }
-      viewModel.submitGuess(builder.toString());
-    });
+    binding.submit.setOnClickListener((v) -> submitGuess());
     spinners = setupSpinners(binding.guessContainer, getResources().getInteger(R.integer.code_length_pref_max));
     //compiler infers that v is a view : (View v)
     return binding.getRoot();
@@ -60,7 +50,8 @@ public class PlayFragment extends Fragment {
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     //    viewModel = new ViewModelProvider(getActivity()).get(PlayViewModel.class);
-    viewModel = new ViewModelProvider(this).get(PlayViewModel.class);
+    //noinspection ConstantConditions
+    viewModel = new ViewModelProvider(getActivity()).get(PlayViewModel.class);
     getLifecycle().addObserver(viewModel);
     viewModel.getThrowable().observe(getViewLifecycleOwner(), this::displayError);
     viewModel.getGame().observe(getViewLifecycleOwner(), this::update); //observes a game
@@ -91,13 +82,46 @@ public class PlayFragment extends Fragment {
     binding = null;
   }
 
+  private void submitGuess() {
+    // Concatenate spinner selections & submit
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < codeLength; i++) {
+      String emoji = (String) spinners[i].getSelectedItem();
+      builder.append(emoji);
+    }
+    viewModel.submitGuess(builder.toString());
+  }
+
   private void update(Game game) { //updates the display model
-    this.game = game;
     codeLength = game.getLength();
-    pool = game.getPool();
+    String pool = game.getPool();
     List<Guess> guesses = game.getGuesses();
     Guess lastGuess = guesses.isEmpty() ? null : guesses.get(guesses.size()-1);
     String[] emojis = getUnicodeArray(pool);
+    updateSpinners(lastGuess, emojis);
+    updateControls(game);
+    updatedGuesses(guesses);
+  }
+
+  private void updatedGuesses(List<Guess> guesses) {
+    GuessItemAdapter adapter = new GuessItemAdapter(getContext(),
+        guesses);// how we get a context in a fragment
+    binding.guesses.setAdapter(adapter);//this adapter can tell us our guesses
+    //want to see the most recent guess at bottom, so scroll list to last item
+    binding.guesses.scrollToPosition(adapter.getItemCount() - 1);
+  }
+
+  private void updateControls(Game game) {
+    if (game.isSolved()) {
+      binding.guessContainer.setVisibility(View.GONE);
+      binding.submit.setVisibility(View.GONE);
+    } else {
+      binding.guessContainer.setVisibility(View.VISIBLE);
+      binding.submit.setVisibility(View.VISIBLE);
+    }
+  }
+
+  private void updateSpinners(Guess lastGuess, String[] emojis) {
     for (int i = codeLength; i < spinners.length; i++) {
       spinners[i].setVisibility(View.GONE); //hide all spinner over codelength
     }
@@ -117,18 +141,6 @@ public class PlayFragment extends Fragment {
         }
       }
     }
-    if (game.isSolved()) {
-      binding.guessContainer.setVisibility(View.GONE);
-      binding.submit.setVisibility(View.GONE);
-    } else {
-      binding.guessContainer.setVisibility(View.VISIBLE);
-      binding.submit.setVisibility(View.VISIBLE);
-    }
-    GuessItemAdapter adapter = new GuessItemAdapter(getContext(),
-        guesses);// how we get a context in a fragment
-    binding.guesses.setAdapter(adapter);//this adapter can tell us our guesses
-    //want to see the ost recent guess at bottom, so scroll list to last item
-    binding.guesses.scrollToPosition(adapter.getItemCount() - 1);
   }
 
   private void displayError(Throwable throwable) {
