@@ -12,4 +12,14 @@
     <item name="android:includeFontPadding">false</item>
   </style>
 <!--  inherits from emojiItem all of these attributes: EmojiItem.Pulldown-->
+
+  <style name="GuessItem">
+    <item name="android:textSize">@dimen/base_emoji_size</item>
+    <item name="android:includeFontPadding">false</item>
+  </style>
+
+  <style name="MatchCount">
+    <item name="android:textSize">@dimen/match_count_size</item>
+    <item name="android:includeFontPadding">false</item>
+  </style>
 </resources>
