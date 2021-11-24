@@ -5,7 +5,31 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:paddingTop="@dimen/half_dynamic_spacing"
   tools:context=".controller.ScoresFragment">
+
+  <TextView
+    android:id="@+id/code_length_label"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/half_static_spacing"
+    android:text="@string/code_length_label"
+    android:textStyle="bold"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="@id/code_length"/>
+
+  <SeekBar
+    android:id="@+id/code_length"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/half_dynamic_spacing"
+    android:min="@integer/code_length_pref_min"
+    android:max="@integer/code_length_pref_max"
+    android:progress="@integer/code_length_pref_default"
+    app:layout_constraintTop_toBottomOf="@id/code_length_label"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/code_length_display"
+    app:layout_constraintHorizontal_weight="4"/>
 
   <androidx.recyclerview.widget.RecyclerView
     android:id="@+id/games"

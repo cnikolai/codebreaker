@@ -23,6 +23,7 @@
   <string name="code_length_pref_key">code_length_pref</string>
   <string name="pool_size_pref_key">pool_size_pref</string>
   <string name="pool_size_pref_title">Pool size</string>
+  <string name="code_length_label">Code length</string>
 
   <string-array name="emojis">
     <item>&#x1f600;</item> <!-- grinning face -->
