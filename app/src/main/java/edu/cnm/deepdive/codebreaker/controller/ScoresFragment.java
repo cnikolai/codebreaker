@@ -4,27 +4,39 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import edu.cnm.deepdive.codebreaker.R;
 import edu.cnm.deepdive.codebreaker.adapter.GameSummaryAdapter;
 import edu.cnm.deepdive.codebreaker.databinding.FragmentScoresBinding;
 import edu.cnm.deepdive.codebreaker.viewmodel.ScoresViewModel;
+import java.util.function.BiConsumer;
 
-public class ScoresFragment extends Fragment {
+public class ScoresFragment extends Fragment implements SeekBar.OnSeekBarChangeListener {
 
   private ScoresViewModel viewModel;
   private FragmentScoresBinding binding;
+  private BiConsumer<Integer, Boolean> codeLengthUpdater;
+  private BiConsumer<Integer, Boolean> poolSizeUpdater;
+  private BiConsumer<Boolean, Boolean> sortedByTimeUpdater;
 
   public View onCreateView(@NonNull LayoutInflater inflater,
       ViewGroup container, Bundle savedInstanceState) {
     binding = FragmentScoresBinding.inflate(inflater, container, false);
     // TODO: Add onClickListener to column headers.  Listeners should invoke the set methods
     //  in scores view model to force a refresh of the query.
-    // TODO: Add onItemSelectedListener to spinner.  Listener will invoke set methods in
+    // TODO: Add onItemSelectedListener to seekbar.  Listener will invoke set methods in
     //  ScoresViewModel to force a refresh of the query.
-    // TODO: Populate spinners using min and max code length and pool size integer resources.
+    // TODO: Populate seekbars using min and max code length and pool size integer resources.
+    setupParameterChangeConsumers();
+    //every view object has a tag field
+    binding.codeLength.setTag(codeLengthUpdater);
+    binding.poolSize.setTag(poolSizeUpdater);
+    binding.codeLength.setOnSeekBarChangeListener(this);
+    binding.poolSize.setOnSeekBarChangeListener(this);
     return binding.getRoot();
   }
 
@@ -52,5 +64,48 @@ public class ScoresFragment extends Fragment {
   public void onDestroyView() {
     super.onDestroyView();
     binding = null;
+  }
+
+  private void setupParameterChangeConsumers() {
+    codeLengthUpdater = (value, fromUser) -> {
+      binding.codeLengthDisplay.setText(String.valueOf(value));
+      if (fromUser) {
+        viewModel.setCodeLength(value);
+      }
+    };
+    poolSizeUpdater = (value, fromUser) -> {
+      binding.poolSizeDisplay.setText(String.valueOf(value));
+      if (fromUser) {
+        viewModel.setPoolSize(value);
+      }
+    };
+    sortedByTimeUpdater = (sortByTime, fromUser) -> {
+      // Update appearance of headers
+      if (sortByTime) {
+        binding.header.time.setText(R.string.time_header_selected);
+        binding.header.guesses.setText(R.string.guesses_header_unselected);
+      } else {
+        binding.header.time.setText(R.string.time_header_unselected);
+        binding.header.guesses.setText(R.string.guesses_header_selected);
+      }
+      if (fromUser) {
+        viewModel.setSortedByTime(sortByTime);
+      }
+    };
+  }
+
+  @Override
+  public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+    ((BiConsumer<Integer, Boolean>) seekBar.getTag()).accept(progress, fromUser); //we stuffed a BiConsumer into this object
+  }
+
+  @Override
+  public void onStartTrackingTouch(SeekBar seekBar) {
+    //Do nothing.
+  }
+
+  @Override
+  public void onStopTrackingTouch(SeekBar seekBar) {
+    //Do nothing.
   }
 }
